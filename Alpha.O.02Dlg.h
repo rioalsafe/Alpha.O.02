@@ -25,9 +25,11 @@ public:
 // 구현입니다.
 protected:
 	HICON m_hIcon;
-	enum { WIDTH = 30, OFFSET = 20 };
+	enum { WIDTH = 30, OFFSET = 20 }; 
 	int step = 0;
 	int dol[19][19] = { 0, };
+	
+
 	// 생성된 메시지 맵 함수
 	virtual BOOL OnInitDialog();
 	void WhoIsWinner(int sum);
