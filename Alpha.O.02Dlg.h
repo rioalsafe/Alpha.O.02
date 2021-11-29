@@ -25,7 +25,7 @@ public:
 // 구현입니다.
 protected:
 	HICON m_hIcon;
-	enum { WIDTH = 30, OFFSET = 20, TURNTIME = 3 };//WIDTH (한칸의 간격), OFFSET(바둑판과 메인윈도우사이 간격), TURNTIME(제한시간)
+	enum { WIDTH = 30, OFFSET = 20, TURNTIME = 30 };//WIDTH (한칸의 간격), OFFSET(바둑판과 메인윈도우사이 간격), TURNTIME(제한시간)
 	int step = 0;	//0, 1, 2 (돌이없다, 흑돌, 백돌)
 	int dol[19][19] = { 0, }; //바둑판 2차원 배열
 	int black_win_count = 0; //흑승리 카운트 ++
