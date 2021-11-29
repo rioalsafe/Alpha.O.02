@@ -27,19 +27,16 @@ CAlphaO02Dlg::CAlphaO02Dlg(CWnd* pParent /*=nullptr*/)
 void CAlphaO02Dlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_LOG, dol_log);
-	DDX_Control(pDX, IDC_TIMER, m_timer);
+	DDX_Control(pDX, IDC_LOG, m_dol_log);
 	DDX_Control(pDX, IDC_WINNER, m_winner);
-	DDX_Control(pDX, IDC_PAUSE, m_pause);
+	DDX_Control(pDX, IDC_TIMER, m_timer);
 }
 
 BEGIN_MESSAGE_MAP(CAlphaO02Dlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_LBUTTONDOWN()
-	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_SAVE, &CAlphaO02Dlg::OnBnClickedSave)
-	ON_WM_TIMER()
 	ON_WM_TIMER()
 	ON_WM_LBUTTONUP()
 	ON_BN_CLICKED(IDC_PAUSE, &CAlphaO02Dlg::OnBnClickedPause)
@@ -83,15 +80,13 @@ void CAlphaO02Dlg::OnPaint()
 	else
 	{
 
-		CBrush MyBrush(RGB(248, 207, 143));
+		CBrush MyBrush(RGB(248, 207, 143));	 //바둑판 색채우기
 		dc.SelectObject(&MyBrush);
-		//설정한 색으로 사각형 영역 그리기 dc.Rectangle(10, 10, 10 + 20 * 9, 10 + 20 * 9)
 
-		//CDialogEx::OnPaint(); 주석처리해준다!
 
-		for (int x = 0; x < 19; x++)
+		for (int x = 0; x < 18; x++) //19x19 바둑판 그리기
 		{
-			for (int y = 0; y < 19; y++)
+			for (int y = 0; y < 18; y++)
 			{
 				dc.Rectangle(
 					OFFSET + x * WIDTH,
@@ -102,7 +97,7 @@ void CAlphaO02Dlg::OnPaint()
 			}
 		}
 
-		dc.SelectStockObject(DC_BRUSH);
+		dc.SelectStockObject(DC_BRUSH);		//바둑판안에 바둑돌 그리기
 		for (int x = 0; x < 19; x++)
 		{
 			for (int y = 0; y < 19; y++)
@@ -117,6 +112,7 @@ void CAlphaO02Dlg::OnPaint()
 				}
 			}
 		}
+
 	}
 }
 
@@ -131,25 +127,29 @@ void CAlphaO02Dlg::OnLButtonDown(UINT nFlags, CPoint point)
 	index_x = (point.x - OFFSET + (WIDTH / 2)) / WIDTH;
 	index_y = (point.y - OFFSET + (WIDTH / 2)) / WIDTH;
 
-	if (index_x < 19 && index_y < 19 && index_x >= 0 && index_y >= 0 && dol[index_y][index_x] == 0)
-	{
-		// 타이머 초기화, 타이머리스트 초기화, 제한 시간 입력
-		KillTimer(1);
-		m_timer.ResetContent();
-		turn = TURNTIME;
-
-
-		if (index_x < 19 && index_y < 19 && index_x >= 0 && index_y >= 0)
+	if (pause_count == 0) {
+		if (index_x < 19 && index_y < 19 && index_x >= 0 && index_y >= 0 && dol[index_y][index_x] == 0)
 		{
-			dol[index_y][index_x] = step + 1; // 검은돌이면 0 + 1 , 흰돌이면 1+1 이 들어가게됨.
-			InvalidateRect(CRect(index_x * WIDTH - (WIDTH / 2) + OFFSET,
-				index_y * WIDTH - (WIDTH / 2) + OFFSET,
-				index_x * WIDTH - (WIDTH / 2) + OFFSET + WIDTH,
-				index_y * WIDTH - (WIDTH / 2) + OFFSET + WIDTH)); //////////////////////////// OnPaint()
-			
-			step = !step;
+			// 타이머 초기화, 타이머리스트 초기화, 제한 시간 입력
+			KillTimer(1);
+			m_timer.ResetContent();
+			turn = TURNTIME;
+
+
+			if (index_x < 19 && index_y < 19 && index_x >= 0 && index_y >= 0)
+			{
+				dol[index_y][index_x] = step + 1; // 검은돌이면 0 + 1 , 흰돌이면 1+1 이 들어가게됨.
+				InvalidateRect(CRect(index_x * WIDTH - (WIDTH / 2) + OFFSET,
+					index_y * WIDTH - (WIDTH / 2) + OFFSET,
+					index_x * WIDTH - (WIDTH / 2) + OFFSET + WIDTH,
+					index_y * WIDTH - (WIDTH / 2) + OFFSET + WIDTH)); //////////////////////////// OnPaint()
+
+				step = !step;
+				PlaySound(MAKEINTRESOURCE(IDR_WAVE1), NULL, SND_ASYNC | SND_RESOURCE | SND_SYNC);
+			}
 		}
 	}
+	else AfxMessageBox(_T("정지버튼을 해제해주세요"));
 
 
 	if (dol[index_y][index_x] != 0) // 오목 승리 판별
@@ -216,13 +216,6 @@ void CAlphaO02Dlg::OnLButtonUp(UINT nFlags, CPoint point)
 }
 
 
-//저장 버튼 클릭시 이벤트
-void CAlphaO02Dlg::OnBnClickedSave()
-{
-	OnSave();
-}
-
-
 //정지 버튼 클릭시
 void CAlphaO02Dlg::OnBnClickedPause()
 {
@@ -231,32 +224,63 @@ void CAlphaO02Dlg::OnBnClickedPause()
 }
 
 
+//저장 버튼 클릭시 이벤트
+void CAlphaO02Dlg::OnBnClickedSave()
+{
+	OnSave();
+}
+
+
 
 //승리 메세지 전달
 void CAlphaO02Dlg::WhoIsWinner(int sum)
 {
 	CString strMessage;
+	CString strBoxMessage;
 
-	CString bWin = _T("BLACK WIN");
-	CString wWin = _T("WHITE WIN");
-	CString Tie = _T("TIE");
+	
 
 	KillTimer(1);	//이겼을시 타이머 종료
 
 	if (sum == 10) {
 		//strMessage = L"축하합니다 백돌님이 승리 하셨습니다\r\n";
 		white_win_count++;
-		dol_log.InsertString(-1, wWin);
+		m_dol_log.InsertString(-1, wWin);
 	}
 
 	else if (sum == 5) {
 		//strMessage = L"축하합니다 흑돌님이 승리 하셨습니다\r\n";
 		black_win_count++;
-		dol_log.InsertString(-1, bWin);
+		m_dol_log.InsertString(-1, bWin);
 	}
 	else
 		return;
 
+	WhoIsLastWinner();
+	
+
+	CClientDC dc(this);
+
+	int left = 20 * WIDTH - (WIDTH / 2) + OFFSET;
+	dc.DrawText(strMessage, CRect(left, 100, left + 300, 200), DT_SINGLELINE | DT_LEFT);
+
+	strBoxMessage = strMessage + L"한 게임 더 하시겠습니까?";
+
+	if (IDOK == AfxMessageBox(strBoxMessage, MB_OKCANCEL))
+	{
+		// 승리 판정이 끝나면 화면이 모두 지워지고, 돌의 값이 들어있는 배열도 초기화하여 다음 게임을 진행할 수 있도록 했다. 
+		memset(dol, 0, sizeof(int) * 19 * 19);
+		Invalidate();
+		step = false;
+	}
+	else
+	{
+		OnOK();
+	}
+}
+
+void CAlphaO02Dlg::WhoIsLastWinner()
+{
 	m_winner.ResetContent();
 
 	if (black_win_count > white_win_count) {
@@ -268,29 +292,7 @@ void CAlphaO02Dlg::WhoIsWinner(int sum)
 	else {
 		m_winner.InsertString(-1, Tie);
 	}
-
-	CClientDC dc(this);
-
-	int left = 20 * WIDTH - (WIDTH / 2) + OFFSET;
-	dc.DrawText(strMessage, CRect(left, 100, left + 300, 200), DT_SINGLELINE | DT_LEFT);
-
-	CString strBoxMessage;
-	strBoxMessage = strMessage + L"한 게임 더 하시겠습니까?";
-
-	if (IDOK == AfxMessageBox(strBoxMessage, MB_OKCANCEL))
-	{
-		// 승리 판정이 끝나면 화면이 모두 지워지고, 돌의 값이 들어있는 배열도 초기화하여 다음 게임을 진행할 수 있도록 했다. 
-		memset(dol, 0, sizeof(int) * 19 * 19);
-		Invalidate();
-		step = false;
-
-	}
-	else
-	{
-		OnOK();
-	}
 }
-
 
 
 
@@ -307,8 +309,8 @@ void CAlphaO02Dlg::OnSave(void)
 		CFile File(sPath, CFile::modeWrite | CFile::modeCreate);
 		CString sData = NULL;
 
-		for (int i = 0; i < dol_log.GetCount(); ++i) {
-			dol_log.GetText(i, sData);
+		for (int i = 0; i < m_dol_log.GetCount(); ++i) {
+			m_dol_log.GetText(i, sData);
 			sData += _T("\r\n");
 			File.Write((LPCTSTR)sData, sData.GetLength() * sizeof(TCHAR));
 		}
@@ -327,7 +329,7 @@ void CAlphaO02Dlg::OnTimer(UINT_PTR nIDEvent)
 
 	switch (nIDEvent)
 	{
-	case 1:
+	case 1: // 타이머(1)
 		timenumber.Format(_T(" %d"),turn);
 		m_timer.InsertString(0, timenumber);
 		turn--;
@@ -335,7 +337,7 @@ void CAlphaO02Dlg::OnTimer(UINT_PTR nIDEvent)
 	}
 
 	
-	if (turn == -1) {	//타이머 0이 될시 현재 턴 종료
+	if (turn == -1) {	//타이머시간이 0이 될시 현재 턴 종료
 		KillTimer(1);
 		//CString wWin = _T("턴이 넘어갑니다");
 		//AfxMessageBox(wWin);

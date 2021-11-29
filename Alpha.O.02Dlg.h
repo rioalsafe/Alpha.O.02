@@ -3,7 +3,8 @@
 //
 
 #pragma once
-
+#pragma comment(lib, "winmm")
+#include <mmsystem.h>
 
 // CAlphaO02Dlg 대화 상자
 class CAlphaO02Dlg : public CDialogEx
@@ -32,9 +33,14 @@ protected:
 	int white_win_count = 0; //백승리 카운트 ++
 	int turn; //현재 타이머시간
 	int pause_count = 0;	// 0, 1 (타이머동작, 타이머정지)
+	CString bWin = _T("BLACK WIN");
+	CString wWin = _T("WHITE WIN");
+	CString Tie = _T("TIE");
+
 	// 생성된 메시지 맵 함수
 	virtual BOOL OnInitDialog();
 	void WhoIsWinner(int sum); //승리검정
+	void WhoIsLastWinner(void);
 	void OnSave(void);	//로그 출력
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
@@ -43,10 +49,9 @@ public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnBnClickedSave();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	CListBox dol_log;
+	CListBox m_dol_log;
 	CListBox m_timer;
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	CListBox m_winner;
-	CButton m_pause;
 	afx_msg void OnBnClickedPause();
 };
