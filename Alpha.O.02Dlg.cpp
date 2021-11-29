@@ -349,4 +349,3 @@ void CAlphaO02Dlg::OnTimer(UINT_PTR nIDEvent)
 
 	CDialogEx::OnTimer(nIDEvent);
 }
-
