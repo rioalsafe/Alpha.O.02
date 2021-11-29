@@ -25,16 +25,28 @@ public:
 // 구현입니다.
 protected:
 	HICON m_hIcon;
-	enum { WIDTH = 30, OFFSET = 20 };
-	int step = 0;
-	int dol[19][19] = { 0, };
+	enum { WIDTH = 30, OFFSET = 20, TURNTIME = 3 };//WIDTH (한칸의 간격), OFFSET(바둑판과 메인윈도우사이 간격), TURNTIME(제한시간)
+	int step = 0;	//0, 1, 2 (돌이없다, 흑돌, 백돌)
+	int dol[19][19] = { 0, }; //바둑판 2차원 배열
+	int black_win_count = 0; //흑승리 카운트 ++
+	int white_win_count = 0; //백승리 카운트 ++
+	int turn; //현재 타이머시간
+	int pause_count = 0;	// 0, 1 (타이머동작, 타이머정지)
 	// 생성된 메시지 맵 함수
 	virtual BOOL OnInitDialog();
-	void WhoIsWinner(int sum);
+	void WhoIsWinner(int sum); //승리검정
+	void OnSave(void);	//로그 출력
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-
+	afx_msg void OnBnClickedSave();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	CListBox dol_log;
+	CListBox m_timer;
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	CListBox m_winner;
+	CButton m_pause;
+	afx_msg void OnBnClickedPause();
 };

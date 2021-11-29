@@ -59,5 +59,8 @@
     <Image Include="res\Alpha.O.02.ico">
       <Filter>리소스 파일</Filter>
     </Image>
+    <Image Include="res\icon.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
 </Project>
